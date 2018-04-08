@@ -8,6 +8,7 @@
 #ifndef MESSAGEMANAGER_H_
 #define MESSAGEMANAGER_H_
 
+#include <atomic>
 #include <memory>
 #include <map>
 
@@ -25,9 +26,15 @@ public:
 
 	bool registerCommand(const std::string&,MessageBase*);
 	bool sendResponse(const std::string&);
+	bool isMessageManagerFinished() const;
 
 	static MessageManager* instance();
+	void doneWithMessageManager();
 	virtual ~MessageManager();
+
+	//Overaloaded destructor for TcpServer... May be later
+	//void operator() (TcpServer* server);
+
 
 private:
 	//Private functions
@@ -43,6 +50,9 @@ private:
 
 	//Some important constants
 	const int portNumber = 5000;
+
+	//Commands to handle exit
+	const std::string ExitCommand = "exit";
 };
 
 #endif /* MESSAGEMANAGER_H_ */

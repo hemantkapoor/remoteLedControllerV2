@@ -8,6 +8,7 @@
 #ifndef TCPSERVER_H_
 #define TCPSERVER_H_
 
+#include <atomic>
 #include <thread>
 
 //using callback = std::function<void(char*)>;
@@ -17,18 +18,21 @@ using callback = std::function<void(std::string&)>;
 
 class TcpServer {
 public:
-	TcpServer() = default;
+	TcpServer();
 	bool connect(int portNumber);
 	bool startListening(callback);
 	bool sendMessage(const std::string&);
+	void stopListening();
 	virtual ~TcpServer();
+	bool isTcpFinished() const;
 
 private:
 	std::thread m_thread;
 	int m_serverDescriptor=0;
 	int m_clientDescriptor = 0;
 	bool m_socketCreated = false;
-	bool m_stopListening = false;
+	std::atomic<bool> m_stopListening;
+	std::atomic<bool> m_stopped;
 	bool m_threadStarted = false;  //This will be used when socket thread is non blocking...
 	callback m_callBack = NULL;
 

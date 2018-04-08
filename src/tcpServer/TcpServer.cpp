@@ -23,6 +23,12 @@
 
 #include "TcpServer.h"
 
+TcpServer::TcpServer()
+{
+	m_stopListening = false;
+	m_stopped = false;
+}
+
 
 bool TcpServer::connect(int portNumber)
 {
@@ -152,6 +158,11 @@ void TcpServer::clientThread()
 		}//End of client connection while loop
 		m_clientDescriptor = 0;
 		displayClientMessage = true;
+		if(m_stopListening)
+		{
+			m_stopped = true;
+			close(m_serverDescriptor);
+		}
 	}//End of main thread
 }
 
@@ -211,7 +222,15 @@ bool TcpServer::sendMessage(const std::string& message)
 
 }
 
-TcpServer::~TcpServer() {
+void TcpServer::stopListening()
+{
+	std::cout<<"Stop listening command received...\n";
+	m_stopListening = true;
+}
+
+TcpServer::~TcpServer()
+{
+	std::cout<<"Closing TCP Thread...\n";
 	if(m_threadStarted)
 	{
 		std::cout<<"Waiting for thread to be closed\n";
@@ -220,5 +239,13 @@ TcpServer::~TcpServer() {
 		m_thread.join();
 		std::cout<<"Thread closed...\n";
 	}
+	else
+	{
+		std::cout<<"Thread closed...\n";
+	}
 }
 
+bool TcpServer::isTcpFinished() const
+{
+	return m_stopped;
+}

@@ -6,8 +6,11 @@
  */
 
 
+#include <memory>
 #include <iostream>
 #include <functional>
+#include <thread>
+#include <chrono>
 #include "MessageBase.h"
 #include "MessageManager.h"
 #include "TcpServer.h"
@@ -15,7 +18,7 @@
 
 
 //Static linkage
-MessageManager* MessageManager::m_messageManager = nullptr;
+MessageManager* MessageManager::m_messageManager =  nullptr;
 
 MessageManager* MessageManager::instance()
 {
@@ -52,10 +55,11 @@ void MessageManager::parseMessage(std::string& str)
 
 	auto msgId = vString[0];
 
-	if(msgId == "quit")
+	if(msgId == ExitCommand)
 	{
 		//This is it folk bye bye...
-		//TODO
+		m_server->stopListening();
+		return;
 	}
 
 	auto messageHandler = getMessageHandler(msgId);
@@ -104,12 +108,23 @@ MessageBase* MessageManager::getMessageHandler(std::string command)
 	return findCommand->second;
 }
 
+bool MessageManager::isMessageManagerFinished() const
+{
+	return m_server->isTcpFinished();
+}
+
 
 MessageManager::~MessageManager()
 {
+	std::cout<<"Message Manager destructor called\n";
+}
+
+
+void MessageManager::doneWithMessageManager()
+{
 	if(m_messageManager != nullptr)
 	{
+		m_server.reset(nullptr);
 		delete m_messageManager;
 	}
 }
-
